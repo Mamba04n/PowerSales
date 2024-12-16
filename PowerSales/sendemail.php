@@ -1,47 +1,39 @@
 <?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
-$EmailFrom="noreply@mydomain.com";
-$EmailTo="myemail@mydomain.com";
-//$Subject="Email from the Contact Form";
-$Name=Trim(stripslashes($_POST['name']));
-$Email=Trim(stripslashes($_POST['email']));
-$Subject=Trim(stripslashes($_POST['subject']));
-$Message=Trim(stripslashes($_POST['message']));
+require 'PHPMailer/src/Exception.php';
+require 'PHPMailer/src/PHPMailer.php';
+require 'PHPMailer/src/SMTP.php';
 
-// simple way to validate the form
-$ValidationOk=true;
-if ($Name == "") $ValidationOk=false;
-	if (!$ValidationOk) {
-		echo "<meta http-equiv=\"refresh\" content=\"0;URL=error.html\">";
-		exit;
-	}
-		
-	// preparing the body of the email 
-	$Body="";
-	$Body.="Name: ";
-	$Body.=$Name;
-	$Body.="\n";
+$mail = new PHPMailer(true);                              // Passing `true` enables exceptions
+try {
+    //Server settings
+    $mail->SMTPDebug = 0;                                 // Enable verbose debug output
+    $mail->isSMTP();                                      // Set mailer to use SMTP
+    $mail->Host = '156.unihost.it';  // Specify main and backup SMTP servers
+    $mail->SMTPAuth = true;                               // Enable SMTP authentication
+    $mail->Username = 'info@example.net';                 // SMTP username
+    $mail->Password = 'MyStrongPassword!';                           // SMTP password
+    $mail->SMTPSecure = 'STARTTLS';                           
+    $mail->Port = 587;                                    // TCP port to connect to
 
-	$Body.="Email: ";
-	$Body.=$Email;
-	$Body.="\n";
+    //Recipients
+    $mail->setFrom('info@example.net');
+    $mail->addAddress($_POST['mail']);     // Add a recipient
 
-	$Body.="Message: ";
-	$Body.=$Message;
-	$Body.="\n";
 
-	//sending the email now
-	$success=mail($EmailTo, $Subject, $Body,"From: <$EmailFrom>");
 
-	//redirect after mail send 
-	if ($success) {
- 
-       print "<meta http-equiv=\"refresh\" content=\"0;URL=send.html\">";
+    //Content
+    $mail->isHTML(true);                                  // Set email format to HTML
+    $mail->Subject = $_POST['subject'];
+    $mail->Body    = $_POST['text'];
 
-	}
-	else {
-
-		print "<meta http-equiv=\"refresh\" content=\"0;URL=error.html\">";
-
-	}
+    $mail->send();
+    header('Location: http://www.example.net/contact.php');
+    exit();
+} catch (Exception $e) {
+    echo 'Message could not be sent.';
+    echo 'Mailer Error: ' . $mail->ErrorInfo;
+}
 ?>
